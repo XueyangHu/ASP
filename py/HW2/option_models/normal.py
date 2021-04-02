@@ -35,22 +35,37 @@ class NormalModel:
         return normal_formula(strike, spot, self.vol, texp, intr=self.intr, divr=self.divr, cp=cp)
     
     def delta(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / vol_std
+        
+        delta = cp * ss.norm.cdf(cp * d)  # sensitivity on the underlying price
+        return delta
 
-    def vega(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+    def vega(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp=1):      
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / vol_std
+        
+        vega = ss.norm.pdf(d) * np.sqrt(texp)  # sensitivity on the volatility
+        return vega
 
     def gamma(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / vol_std
+        
+        gamma = ss.norm.pdf(d) / vol_std  # convexity on the underlying price
+        return gamma
 
     def impvol(self, price, strike, spot, texp, cp=1):
         ''' 

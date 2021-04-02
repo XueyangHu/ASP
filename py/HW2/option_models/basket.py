@@ -6,7 +6,7 @@ Created on Tue Sep 19 22:56:58 2017
 """
 import numpy as np
 import scipy.stats as ss
-from .bsm import bsm_formula
+from .bsm import bsm_formula  # .bsm means bsm.py is from the same directory as current file
 from .normal import normal_formula
 
 def basket_check_args(spot, vol, corr_m, weights):
@@ -27,30 +27,21 @@ def basket_price_mc_cv(
     price1 = basket_price_mc(
         strike, spot, vol, weights, texp, cor_m,
         intr, divr, cp, True, n_samples)
-    
-    ''' 
-    compute price2: mc price based on normal model
-    make sure you use the same seed
-
+     
+    # price2: mc price based on normal model    
     # Restore the state in order to generate the same state
     np.random.set_state(rand_st)  
     price2 = basket_price_mc(
         strike, spot, spot*vol, weights, texp, cor_m,
         intr, divr, cp, False, n_samples)
-    '''
-    price2 = 0
-
-    ''' 
-    compute price3: analytic price based on normal model
     
+    # price3: analytic price based on normal model
     price3 = basket_price_norm_analytic(
-        strike, spot, vol, weights, texp, cor_m, intr, divr, cp)
-    '''
-    price3 = 0
+        strike, spot, spot*vol, weights, texp, cor_m, intr, divr, cp)
     
     # return two prices: without and with CV
-    return np.array([price1, price1 - (price2 - price3)])
-
+    return [price1, price1 - (price2 - price3)] 
+    
 
 def basket_price_mc(
     strike, spot, vol, weights, texp, cor_m,
@@ -68,11 +59,12 @@ def basket_price_mc(
     n_assets = spot.size
     znorm_m = np.random.normal(size=(n_assets, n_samples))
     
-    if( bsm ) :
+    if( bsm ):
         '''
         PUT the simulation of the geometric brownian motion below
         '''
-        prices = np.zeros_like(znorm_m)
+        prices = forward[:,None] * np.exp(np.sqrt(texp) * chol_m @ znorm_m - 0.5 * np.diag(cov_m)[:,None] * np.ones_like(znorm_m) * texp)
+        
     else:
         # bsm = False: normal model
         prices = forward[:,None] + np.sqrt(texp) * chol_m @ znorm_m
@@ -99,8 +91,15 @@ def basket_price_norm_analytic(
     
     PUT YOUR CODE BELOW
     '''
+    div_fac = np.exp(-texp*divr)
+    disc_fac = np.exp(-texp*intr)
+    forward = spot / disc_fac * div_fac
+    forward_weighted = (forward * weights).sum()
     
-    return 0.0
+    cov_m = vol * cor_m * vol[:,None]
+    vol_weighted = np.sqrt(weights @ cov_m @ weights.transpose())    
+    
+    return normal_formula(strike, forward_weighted, vol_weighted, texp, intr=0, divr=0, cp=cp)
 
 def spread_price_kirk(strike, spot, vol, texp, corr, intr=0, divr=0, cp=1):
     div_fac = np.exp(-texp*divr)
