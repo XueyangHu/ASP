@@ -68,7 +68,7 @@ class NormalModel:
         return gamma
 
     def impvol(self, price, strike, spot, texp, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        iv_func = lambda _vol: normal_formula(strike, spot, _vol, texp, self.intr, self.divr, cp) - price
+        vol = sopt.brentq(iv_func, 0, 100)
+        return vol
+    

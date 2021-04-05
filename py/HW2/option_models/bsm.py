@@ -37,22 +37,37 @@ class BsmModel:
         return bsm_formula(strike, spot, self.vol, texp, intr=self.intr, divr=self.divr, cp=cp)
     
     def delta(self, strike, spot, texp, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d1 = np.log(forward / strike) / vol_std + 0.5 * vol_std
+        
+        delta = cp * ss.norm.cdf(cp * d1)  # sensitivity on the underlying price
+        return delta
 
     def vega(self, strike, spot, vol, texp, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d1 = np.log(forward / strike) / vol_std + 0.5 * vol_std
+        
+        vega = forward * ss.norm.pdf(d1) * np.sqrt(texp)  # sensitivity on the volatility
+        return vega
 
     def gamma(self, strike, spot, vol, texp, cp=1):
-        ''' 
-        <-- PUT your implementation here
-        '''
-        return 0
+        div_fac = np.exp(-texp*divr)
+        disc_fac = np.exp(-texp*intr)
+        forward = spot / disc_fac * div_fac
+        
+        vol_std = np.fmax(vol * np.sqrt(texp), 1.0e-16)
+        d1 = np.log(forward / strike) / vol_std + 0.5 * vol_std
+        
+        gamma = ss.norm.pdf(d1) / (forward * vol_std)  # convexity on the underlying price
+        return gamma
 
     def impvol(self, price, strike, spot, texp, cp=1):
         iv_func = lambda _vol: \

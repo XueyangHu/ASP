@@ -94,10 +94,10 @@ def basket_price_norm_analytic(
     div_fac = np.exp(-texp*divr)
     disc_fac = np.exp(-texp*intr)
     forward = spot / disc_fac * div_fac
-    forward_weighted = (forward * weights).sum()
+    forward_weighted = forward @ weights
     
     cov_m = vol * cor_m * vol[:,None]
-    vol_weighted = np.sqrt(weights @ cov_m @ weights.transpose())    
+    vol_weighted = np.sqrt(weights @ cov_m @ weights.T)    
     
     return normal_formula(strike, forward_weighted, vol_weighted, texp, intr=0, divr=0, cp=cp)
 
