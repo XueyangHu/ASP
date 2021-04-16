@@ -5,8 +5,8 @@
 
 ## Course Slides and Other Resources
 * Prelims: [Probability Statistics Review](files/Prob_Stat_Review.pdf) 
-* Past Exam: [2017-18 Midterm](files/ASP2017_Midterm.pdf), [2018-19 Midterm](files/ASP2018_Midterm.pdf), [2019-20 Midterm](files/ASP2019_Midterm.pdf)
-* `PyFeng` package ([PyPI](https://pypi.org/project/pyfeng/) \| [Github](https://github.com/PyFE/PyFENG))
+* Past Midterm Exams: [All Exams](files/ASP_Problems.pdf) ([2017-18](files/ASP2017_Midterm.pdf), [2018-19](files/ASP2018_Midterm.pdf), [2019-20](files/ASP2019_Midterm.pdf))
+* `PyFeng` package ([PyPI](https://pypi.org/project/pyfeng/) \| [Github](https://github.com/PyFE/PyFENG) \| [Documentation](https://pyfeng.readthedocs.io/))
 * Scientific computing, MC method, RN generation ([Slides](files/MCmethod.pdf) | [Py demo](py/MC_Demo.ipynb))
 * Black-Scholes model ([Py demo](py/BlackScholes_ImpliedVol.ipynb), [MC demo](py/BlackScholes_MC.ipynb)): Also see Ch. 10 of [StoFin Course Notes](https://github.com/PHBS/StoFin/blob/master/files/SCFA_Notes.pdf)
 * Normal (Bachelier) model ([Slides](files/Normal_Model.pdf)) from **Stochastic Finance** class
@@ -24,12 +24,12 @@ __03__ | 3.16 Tue | Python crash course ([Py Demo](py/PythonCrashCourse_Derek_Ba
 __04__ | 3.19 Fri | Numpy crach course ([Py Demo](py/PythonCrashCourse_Numpy.ipynb)). Black-Scholes implementation ([Py Demo](py/BlackScholes_FunctionVsClass.ipynb)). Implied volatility ([Slides](files/ImpVol.pdf) \| [Py demo](py/BlackScholes_ImpliedVol.ipynb)). 
 __05__ | 3.23 Tue | Bachelier model ([Slides](files/Normal_Model.pdf)). Black-Scholes-Merton and Bachelier option pricing with MC ([Py Demo](py/BlackScholes_MC.ipynb)). Spread/Basket options ([Slides](files/SpreadBasketOption.pdf)). Correlated Normal RNs ([Slides](files/MCmethod.pdf) \| [Py Demo](py/CorrelatedNormals_Demo.ipynb))
 __06__ | 3.26 Fri | Spread/Basket options continued, [HW2: [Spread/Basket option implementation](py/HW2/TestCode_BasketSpread.ipynb), Due next Friday]
-__07__ | 3.30 Tue | SABR model ([Slides](files/SABRmodel.pdf): Volatility smile, Local volatility model)
-__08__ | 4.02 Fri | SABR model continued ([Slides](files/SABRmodel.pdf): Model intro, Euler/Milstein method)
-__09__ | 4.06 Tue | SABR model continued ([Slides](files/SABRmodel.pdf): Conditional MC method), Python Import ([Py Demo](py/HW3/Demo_Advanced_Import.ipynb)), Suggested [project topics](files/Project.md). HW3: [MC method for SABR](py/HW3/TestCode_SABR.ipynb)
-__10__ | 4.09 Fri | SV Model Simulation for Project ([Slides](files/SV_Simulation.pdf))
-__11__ | 4.13 Tue | Research Presentation: NSVh model and Normal SABR ([Slides](files/NSVh_Slides.pdf)), Introduction to PyFE, Github Pull-request
-__12__ | 4.16 Fri | Review for midterm exam (Past Exams: [2017-18](files/ASP2017_Midterm.pdf), [2018-19](files/ASP2018_Midterm.pdf))
+__07__ | 3.30 Tue | SABR model ([Slides](files/SABRmodel.pdf): Volatility smile), Suggested [project topics](files/Project.md)
+__08__ | 4.02 Fri | SABR model continued ([Slides](files/SABRmodel.pdf): Local volatility model, Model intro), Introduction to [PyFENG](https://github.com/PyFE/PyFENG) package
+__09__ | 4.06 Tue | SABR model continued ([Slides](files/SABRmodel.pdf): Euler/Milstein method, Conditional MC), Github pull-request (PR), Py Demo ([SABR](py/SabrModel_Demo.ipynb), [BsmNdMc](BsmNdMc_Demo.ipynb)), HW3: [MC method for SABR](py/HW3/TestCode_SABR.ipynb)
+__10__ | 4.09 Fri | Python Import ([Py Demo](py/HW3/Demo_Advanced_Import.ipynb)), SV Model Simulation for Project ([Slides](files/SV_Simulation.pdf))
+__11__ | 4.13 Tue | SV Model Simulation for Project ([Slides](files/SV_Simulation.pdf)), [Past Exams](files/ASP_Problems.pdf) Review
+__12__ | 4.16 Fri | [Past Exams](files/ASP_Problems.pdf) Review
 __13__ | 4.20 Tue | Midterm Exam ([Solution](files/ASP2019_Midterm.pdf))
 __14__ | 4.23 Fri | Copula ([Slides](files/Copula.pdf), [Py demo](py/Demo_Copula.ipynb))
 __15__ | 4.27 Tue | Copula ([Slides](files/Copula.pdf), [Py demo](py/Demo_Copula.ipynb))
@@ -37,6 +37,7 @@ __16__ | 4.28 Wed | Research Presentation: (Sum of BSM models) and HW3 review
 __17__ | 5.04 Tue | Course project presentation
 __18__ | 5.07 Fri | Course project presentation
 
+<!-- , Research Presentation: NSVh model and Normal SABR ([Slides](files/NSVh_Slides.pdf)) -->
 
 ## Homeworks:
 * ### __Set 0__: (Due by 3.12 Fri)
