@@ -15,39 +15,39 @@ forward = 100
 delta = [1, 1/2, 1/4, 1/8, 1/16, 1/32]
 
 case = np.zeros([3, 6])
-case[0] = [1,   0.5, -0.9, 1, 0.04, np.sqrt(0.04)]
-case[1] = [0.9, 0.3, -0.5, 5, 0.04, np.sqrt(0.04)]
+case[0] = [1,   0.5, -0.9, 10, 0.04, np.sqrt(0.04)]
+case[1] = [0.9, 0.3, -0.5, 15, 0.04, np.sqrt(0.04)]
 case[2] = [1,   1,   -0.3, 5,  0.09, np.sqrt(0.09)]
 
-# for i in range(3):
-#     start = time.time()
-#     vov, kappa, rho, texp, theta, sigma = case[i]
-#
-#     heston_cmc_qe = heston.HestonCondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
-#     price_cmc = np.zeros([len(delta), len(strike)])
-#     for d in range(len(delta)):
-#         price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
-#
-#     end = time.time()
-#     np.set_printoptions(suppress=True)
-#     print('Case %s:' % i)
-#     print(price_cmc)
-#     print('Running time is %.3f seconds.' % (end - start))
-
-n = 100
 for i in range(3):
     start = time.time()
     vov, kappa, rho, texp, theta, sigma = case[i]
 
-    heston_cmc_qe = heston.HestonCondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
-    price_cmc = np.zeros([len(delta), len(strike), n])
-    for j in tqdm(range(n)):
-        for d in range(len(delta)):
-            price_cmc[d, :, j] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=5e3)
+    heston_cmc_qe = heston.HestonQECondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
+    price_cmc = np.zeros([len(delta), len(strike)])
+    for d in range(len(delta)):
+        price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
 
     end = time.time()
     np.set_printoptions(suppress=True)
     print('Case %s:' % i)
-    print(price_cmc.mean(axis=2))
-    print(price_cmc.std(axis=2))
-    print('Running time is %.3f seconds.' % (end - start) + '\n')
+    print(price_cmc)
+    print('Running time is %.3f seconds.' % (end - start))
+
+# n = 50
+# for i in range(3):
+#     start = time.time()
+#     vov, kappa, rho, texp, theta, sigma = case[i]
+#
+#     heston_cmc_qe = heston.HestonQECondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
+#     price_cmc = np.zeros([len(delta), len(strike), n])
+#     for j in tqdm(range(n)):
+#         for d in range(len(delta)):
+#             price_cmc[d, :, j] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e4)
+#
+#     end = time.time()
+#     np.set_printoptions(suppress=True)
+#     print('Case %s:' % i)
+#     print(price_cmc.mean(axis=2))
+#     print(price_cmc.std(axis=2))
+#     print('Running time is %.3f seconds.' % (end - start) + '\n')
