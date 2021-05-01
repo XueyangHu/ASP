@@ -26,14 +26,14 @@ class HestonCondMC:
         >>> heston_cmc_qe = heston.HestonCondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
         >>> price_cmc = np.zeros([len(delta), len(strike)])
         >>> for d in range(len(delta)):
-        >>>     price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e6, seed=123456)
+        >>>     price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
         >>> price_cmc
-        array([[ 3.3096257 ,  0.02422449, 23.0452812 ],
-               [ 3.2157269 ,  0.0275426 , 22.26641464],
-               [ 3.18856515,  0.02810729, 22.07279345],
-               [ 3.16217916,  0.02734329, 21.98065032],
-               [ 3.13853699,  0.02718488, 21.86870042],
-               [ 3.14291096,  0.02760223, 21.88922864]])
+        array([[14.52722285,  0.19584722, 37.20591415],
+               [13.56691261,  0.26568546, 36.12295964],
+               [13.22061601,  0.29003533, 35.9154245 ],
+               [13.12057087,  0.29501411, 35.90207168],
+               [13.1042753 ,  0.29476289, 35.89245755],
+               [13.09047939,  0.29547721, 35.86410028]])
     '''
 
     def __init__(self, vov=1, kappa=0.5, rho=-0.9, theta=0.04):
