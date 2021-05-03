@@ -10,6 +10,7 @@ import scipy.stats as st
 import scipy.integrate as spint
 from tqdm import tqdm
 
+
 class HestonQECondMC:
     '''
     Conditional MC for Heston model based on QE discretization scheme by Andersen(2008)
