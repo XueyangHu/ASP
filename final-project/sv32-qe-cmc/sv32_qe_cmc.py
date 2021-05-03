@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thur, Apr 29, 2021
-Conditional MC for Heston model based on QE discretization scheme by Andersen(2008)
-@author: xueyang & xiaoyin
+Created on Mon, May 3, 2021
+Conditional MC for 3/2 model based on QE discretization scheme by Andersen(2008)
+@author: xueyang
 """
 import numpy as np
 import pyfeng as pf
@@ -11,35 +11,36 @@ import scipy.integrate as spint
 from tqdm import tqdm
 
 
-class HestonQECondMC:
+class SV32QECondMC:
     '''
-    Conditional MC for Heston model based on QE discretization scheme by Andersen(2008)
+    Conditional MC for 3/2 model based on QE discretization scheme by Andersen(2008)
 
     Underlying price is assumed to follow a geometric Brownian motion.
-    Volatility (variance) of the price is assumed to follow a CIR process.
+    Volatility (variance) of the price is assumed to follow 3/2 model by Heston (1997) and Lewis (2000).
 
     Example:
         >>> import numpy as np
+        >>> import sv32_qe_cmc as sv32
         >>> strike = [100.0, 140.0, 70.0]
         >>> forward = 100
         >>> delta = [1, 1/2, 1/4, 1/8, 1/16, 1/32]
-        >>> vov, kappa, rho, texp, theta, sigma = [1, 0.5, -0.9, 10, 0.04, 0.2]
-        >>> heston_cmc_qe = heston.HestonCondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
+        >>> vov, kappa, rho, texp, theta, sigma = [1, 0.5, -0.9, 10, 0.04, np.sqrt(0.04)]
+        >>> sv32_cmc_qe = sv32.SV32QECondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
         >>> price_cmc = np.zeros([len(delta), len(strike)])
         >>> for d in range(len(delta)):
-        >>>     price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
+        >>>     price_cmc[d, :] = sv32_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
         >>> price_cmc
-        array([[14.52722285,  0.19584722, 37.20591415],
-               [13.56691261,  0.26568546, 36.12295964],
-               [13.22061601,  0.29003533, 35.9154245 ],
-               [13.12057087,  0.29501411, 35.90207168],
-               [13.1042753 ,  0.29476289, 35.89245755],
-               [13.09047939,  0.29547721, 35.86410028]])
+        array([[22.95314785, 10.44093783, 38.98364955],
+               [23.2425543 , 10.67162543, 39.26731165],
+               [23.20965635, 10.64143576, 39.21865023],
+               [22.93527518, 10.4758762 , 38.87971674],
+               [22.9298084 , 10.47613694, 38.88556212],
+               [23.12806844, 10.56484306, 39.16893668]])
     '''
 
     def __init__(self, vov=1, kappa=0.5, rho=-0.9, theta=0.04):
         '''
-        Initiate a Heston model
+        Initiate a 3/2 model
 
         Args:
             vov: volatility of variance, strictly positive
@@ -54,7 +55,7 @@ class HestonQECondMC:
 
     def price(self, strike, spot, texp, sigma, delta, intr=0, divr=0, psi_c=1.5, path=10000, seed=None):
         '''
-        Conditional MC routine for Heston model
+        Conditional MC routine for 3/2 model
         Generate paths for vol only using QE discretization scheme.
         Compute integrated variance and get BSM prices vector for all strikes.
 
@@ -79,47 +80,52 @@ class HestonQECondMC:
         self.path = int(path)
         self.step = int(texp / self.delta)
 
-        vt = self.sigma ** 2 * np.ones([self.path, self.step + 1])
+        # xt = 1 / vt
+        xt = 1 / self.sigma**2 * np.ones([self.path, self.step + 1])
         np.random.seed(seed)
         u = np.random.uniform(size=(self.path, self.step))
 
-        expo = np.exp(-self.kappa * self.delta)
-        # for i in tqdm(range(self.step)):
+        # equivalent kappa and theta for xt to follow a Heston model
+        kappa_new = self.kappa * self.theta
+        theta_new = (self.kappa + self.vov**2) / (self.kappa * self.theta)
+        expo = np.exp(-kappa_new * self.delta)
         for i in range(self.step):
-            # compute m, s_square, psi given vt(i)
-            m = self.theta + (vt[:, i] - self.theta) * expo
-            s2 = vt[:, i] * (self.vov ** 2) * expo * (1 - expo) / self.kappa + self.theta * (self.vov ** 2) * \
-                 ((1 - expo) ** 2) / (2 * self.kappa)
+            # compute m, s_square, psi given xt(i)
+            m = theta_new + (xt[:, i] - theta_new) * expo
+            s2 = xt[:, i] * (self.vov ** 2) * expo * (1 - expo) / kappa_new + theta_new * (self.vov ** 2) * \
+                 ((1 - expo) ** 2) / (2 * kappa_new)
             psi = s2 / m ** 2
 
-            # compute vt(i+1) given psi
+            # compute xt(i+1) given psi
             below = np.where(psi <= psi_c)[0]
             ins = 2 * psi[below] ** -1
             b2 = ins - 1 + np.sqrt(ins * (ins - 1))
             b = np.sqrt(b2)
             a = m[below] / (1 + b2)
             z = st.norm.ppf(u[below, i])
-            vt[below, i+1] = a * (b + z) ** 2
+            xt[below, i+1] = a * (b + z) ** 2
 
             above = np.where(psi > psi_c)[0]
             p = (psi[above] - 1) / (psi[above] + 1)
             beta = (1 - p) / m[above]
             for k in range(len(above)):
                 if u[above[k], i] > p[k]:
-                    vt[above[k], i+1] = beta[k] ** -1 * np.log((1 - p[k]) / (1 - u[above[k], i]))
+                    xt[above[k], i+1] = beta[k] ** -1 * np.log((1 - p[k]) / (1 - u[above[k], i]))
                 else:
-                    vt[above[k], i+1] = 0
+                    xt[above[k], i+1] = 0
 
         # compute integral of vt, equivalent spot and vol
+        vt = 1 / xt
         vt_int = spint.simps(vt, dx=self.delta)
-        spot_cmc = spot * np.exp(self.rho * (vt[:, -1] - vt[:, 0] - self.kappa * (self.theta * texp - vt_int))
-                                 / self.vov - self.rho ** 2 * vt_int / 2)
+
+        spot_cmc = spot * np.exp(self.rho / self.vov * (np.log(vt[:, -1] / vt[:, 0]) - self.kappa *
+                    (self.theta * texp - vt_int * (1 + self.vov**2 * 0.5 / self.kappa))) - self.rho ** 2 * vt_int / 2)
         vol_cmc = np.sqrt((1 - self.rho ** 2) * vt_int / texp)
 
         # compute bsm price vector for the given strike vector
         price_cmc = np.zeros_like(strike)
         for j in range(len(strike)):
-            price_cmc[j] = np.mean(self.bsm_model.price_formula(strike[j], spot_cmc, vol_cmc, texp))
+            price_cmc[j] = np.mean(self.bsm_model.price_formula(strike[j], spot_cmc, vol_cmc, texp, intr=intr, divr=divr))
 
         return price_cmc
 
