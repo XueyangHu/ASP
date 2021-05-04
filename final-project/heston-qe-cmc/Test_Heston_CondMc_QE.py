@@ -1,9 +1,9 @@
 import numpy as np
-import heston_qe_cmc as heston
+import heston_cmc_qe as heston
 import time
-from tqdm import tqdm
 import pyfeng as pf
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 '''
 Test CMC for Heston model using QE scheme
@@ -29,7 +29,7 @@ for i in range(3):
     start = time.time()
     vov, kappa, rho, texp, theta, sigma = case[i]
 
-    heston_cmc_qe = heston.HestonQECondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
+    heston_cmc_qe = heston.HestonCondMcQE(vov=vov, kappa=kappa, rho=rho, theta=theta)
     price_cmc = np.zeros([len(delta), len(strike)])
     for d in range(len(delta)):
         price_cmc[d, :] = heston_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], path=1e5, seed=123456)
@@ -45,7 +45,7 @@ for i in range(3):
 #     start = time.time()
 #     vov, kappa, rho, texp, theta, sigma = case[i]
 #
-#     heston_cmc_qe = heston.HestonQECondMC(vov=vov, kappa=kappa, rho=rho, theta=theta)
+#     heston_cmc_qe = heston.HestonCondMcQE(vov=vov, kappa=kappa, rho=rho, theta=theta)
 #     price_cmc = np.zeros([len(delta), len(strike), n])
 #     for j in tqdm(range(n)):
 #         for d in range(len(delta)):

@@ -1,15 +1,15 @@
 import numpy as np
-import sv42_qe_cmc as sv42
+import sv42_cmc_qe as sv42
 import time
-from tqdm import tqdm
 import pyfeng as pf
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 '''
 Test CMC for 4/2 model using QE scheme
 '''
 
-# strike = np.linspace(75, 125, num=25)   # Generate an arithmetic sequence of 25 numbers from 75 to 125
+# strike = np.linspace(75, 125, num=25)
 strike = [100.0, 140.0, 70.0]
 forward = 100
 delta = [1, 1/2, 1/4, 1/8, 1/16, 1/32]
@@ -23,10 +23,10 @@ for i in range(3):
     start = time.time()
     vov, kappa, rho, texp, theta, sigma = case[i]
 
-    sv42_cmc_qe = sv42.SV42QECondMC(a=1, b=0, vov=vov, kappa=kappa, rho=rho, theta=theta)
+    sv42_cmc_qe = sv42.Sv42CondMcQE(a=1, b=0, vov=vov, kappa=kappa, rho=rho, theta=theta)
     price_cmc = np.zeros([len(delta), len(strike)])
     for d in range(len(delta)):
-        price_cmc[d, :] = sv42_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], err=1e-6, path=1e5, seed=123456)
+        price_cmc[d, :] = sv42_cmc_qe.price(strike, forward, texp, sigma=sigma, delta=delta[d], err=1e-6, path=1e4, seed=123456)
 
     end = time.time()
     np.set_printoptions(suppress=True)
@@ -39,7 +39,7 @@ for i in range(3):
 #     start = time.time()
 #     vov, kappa, rho, texp, theta, sigma = case[i]
 #
-#     sv42_cmc_qe = sv42.SV42QECondMC(a=1, b=0, vov=vov, kappa=kappa, rho=rho, theta=theta)
+#     sv42_cmc_qe = sv42.Sv42CondMcQE(a=1, b=1, vov=vov, kappa=kappa, rho=rho, theta=theta)
 #     price_cmc = np.zeros([len(delta), len(strike), n])
 #     for j in tqdm(range(n)):
 #         for d in range(len(delta)):
