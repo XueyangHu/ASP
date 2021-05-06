@@ -8,6 +8,7 @@ import numpy as np
 import pyfeng as pf
 import scipy.stats as st
 import scipy.integrate as spint
+import scipy.optimize as sopt
 from tqdm import tqdm
 
 
@@ -53,8 +54,9 @@ class HestonCondMcQE:
         self.rho = rho
         self.theta = theta
 
-        self.rx_points = None  # for TG scheme only
+        self.psi_points = None  # for TG scheme only
         self.rx_results = None
+        self.dis = 1e-3
 
     def price(self, strike, spot, texp, sigma, delta, intr=0, divr=0, psi_c=1.5, path=10000, scheme='QE', seed=None):
         '''
@@ -63,7 +65,7 @@ class HestonCondMcQE:
         Compute integrated variance and get BSM prices vector for all strikes.
 
         Args:
-            strike: strike price
+            strike: strike price, in vector form
             spot: spot (or forward)
             texp: time to expiry
             sigma: initial volatility
@@ -72,7 +74,7 @@ class HestonCondMcQE:
             divr: dividend/convenience yield (foreign interest rate)
             psi_c: critical value for psi, lying in [1, 2]
             path: number of vol paths generated
-            scheme: discretization scheme for vt, {'QE', 'TG', 'Euler', 'Milstein'}
+            scheme: discretization scheme for vt, {'QE', 'TG', 'Euler', 'Milstein', 'KJ'}
             seed: random seed for rv generation
 
         Return:
@@ -118,7 +120,7 @@ class HestonCondMcQE:
 
         elif scheme == 'TG':
             if np.all(self.rx_results) == None:
-                self.rx_points, self.rx_results = self.prepare_rx()
+                self.psi_points, self.rx_results = self.prepare_rx()
 
             expo = np.exp(-self.kappa * self.delta)
             for i in range(self.step):
@@ -128,7 +130,9 @@ class HestonCondMcQE:
                      ((1 - expo) ** 2) / (2 * self.kappa)
                 psi = s2 / m ** 2
 
-                rx = np.array([(self.rx_results[self.rx_points >= j][0] + self.rx_results[self.rx_points <= j][-1])/2
+                # NEED TO BE MODIFIED
+                # rx = np.array([(self.rx_results[int(j/self.dis)] + self.rx_results[int(j/self.dis)+1]) / 2 for j in psi])
+                rx = np.array([(self.rx_results[self.psi_points >= j][0] + self.rx_results[self.psi_points <= j][-1])/2
                                for j in psi])
 
                 z = np.random.normal(size=(self.path, self.step))
@@ -151,7 +155,17 @@ class HestonCondMcQE:
             z = np.random.normal(size=(self.path, self.step))
             for i in range(self.step):
                 vt[:, i+1] = vt[:, i] + self.kappa * (self.theta - np.max(vt[:, i], 0)) * self.delta + self.vov * \
-                             np.sqrt(np.max(vt[:, i], 0) * self.delta) * z[:, i] + self.vov**2 * 0.25 * (z[:, i]**2 - 1)
+                             np.sqrt(np.max(vt[:, i], 0) * self.delta) * z[:, i] + \
+                             self.vov**2 * 0.25 * (z[:, i]**2 - 1) * self.delta
+            below_0 = np.where(vt < 0)
+            vt[below_0] = 0
+
+        elif scheme == 'KJ':
+            z = np.random.normal(size=(self.path, self.step))
+            for i in range(self.step):
+                vt[:, i+1] = (vt[:, i] + self.kappa * self.theta * self.delta + self.vov * \
+                             np.sqrt(np.max(vt[:, i], 0) * self.delta) * z[:, i] + \
+                             self.vov**2 * 0.25 * (z[:, i]**2 - 1) * self.delta) / (1 + self.kappa * self.delta)
             below_0 = np.where(vt < 0)
             vt[below_0] = 0
 
@@ -171,13 +185,19 @@ class HestonCondMcQE:
 
     def prepare_rx(self):
         # for TG scheme only, pre-calculate r(x) and store the result
+        # NEED TO BE MODIFIED
         fx = lambda rx: rx * st.norm.pdf(rx) + st.norm.cdf(rx) * (1 + rx ** 2) / \
                         ((st.norm.pdf(rx) + rx * st.norm.cdf(rx)) ** 2) - 1
-        rx_points = np.linspace(-3, 400, 10 ** 4)
-        rx_results = fx(rx_points)
-        self.rx_points = rx_points
-        self.rx_results = rx_results
+        rx_results = np.linspace(-2, 100, 10 ** 5)
+        psi_points = fx(rx_results)
 
-        return rx_points, rx_results
+        # psi_points = np.linspace(0, 100, 10 ** 4)
+        # rx_results = np.zeros_like(psi_points)
+        # for i in range(len(psi_points)):
+        #     r_psi = lambda rx: rx * st.norm.pdf(rx) + st.norm.cdf(rx) * (1 + rx ** 2) / \
+        #                 ((st.norm.pdf(rx) + rx * st.norm.cdf(rx)) ** 2) - 1 - psi_points[i]
+        #     rx_results[i] = sopt.brentq(r_psi, -2, 2)
+
+        return psi_points, rx_results
 
 
